@@ -4,20 +4,20 @@ import 'package:sqflite/sqflite.dart';
 
 class SqlDb {
   
-  static Database? _db;
-  Future<Database?> get db async {
-    if (_db == null) {
-      _db = await _intialDB();
+  static Database? _db;// متغير ثابت لتخزين قاعدة البيانات
+  Future<Database?> get db async {//دالة غير متزامنة للوصول إلى قاعدة البيانات
+    if (_db == null) {//قاعدة البيانات موجودة
+      _db = await _intialDB();//استدعاء دالة لإنشاء قاعدة البيانات
       return _db;
     } else {
       return _db;
     }
   }
 
-  Future<Database> _intialDB() async {
-    String databasepath = await getDatabasesPath();
-    String path = join(databasepath, 'game.db');
-    Database mydb = await openDatabase(path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);
+  Future<Database> _intialDB() async {//دالة غير متزامنة لإنشاء قاعدة البيانات
+    String databasepath = await getDatabasesPath();//استدعاء مسار قاعدة البيانات
+    String path = join(databasepath, 'game.db');//تكوين مسار قاعدة البيانات
+    Database mydb = await openDatabase(path, onCreate: _onCreate, version: 1, onUpgrade: _onUpgrade);//فتح قاعدة البياناتمع استدعاء دوال إنشائ أو ترقية
     return mydb;
   }
 

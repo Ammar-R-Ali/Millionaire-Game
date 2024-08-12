@@ -39,7 +39,7 @@ class PassWord extends StatefulWidget {
                     border: Border.all(color: Colors.white,width: 2),
                     borderRadius: BorderRadius.circular(15)),
                     child: TextFormField(
-                      obscureText: true,
+                      obscureText: true,//إخفاء المدخلات 
                       style: const TextStyle(color: Colors.white,fontWeight: FontWeight.w700,fontSize: 20),
                       decoration: InputDecoration(
                         prefix: const Icon(Icons.lock,color: Colors.white,size: 30,),

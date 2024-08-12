@@ -12,30 +12,31 @@ class GamePage  extends StatefulWidget {
   class  _GamePage extends State<GamePage>{
 
   SqlDb sqlDb = SqlDb();
-  bool changeQuestion=false;
-  bool delete2Answers=true;
-  bool flag= true;
-  List<Map> gameQuestions = List.generate(16, (index) => {});
-  List questions1 =[];
-  List questions2 =[];
-  List questions3 =[];
-  int questionNum =0;
-  int money=0;
-  List answers=List.generate(4, (index) => '');
+  bool changeQuestion=true; //إمكانية تغيير السؤال
+  bool delete2Answers=true;//إمكانية حذف إجابتين
+  List<Map> gameQuestions = List.generate(16, (index) => {}); //أسئلة المسابقة
+  List questions1 =[]; //مصفوفة لجميع الأسئلة السهلة ضمن قاعدة البيانات
+  List questions2 =[];//مصفوفة لجميع الأسئلة المتوسطة ضمن قاعدة البيانات
+  List questions3 =[];//مصفوفة لجميع الأسئلة الصعبة ضمن قاعدة البيانات
+  int questionNum =14;//رقم السؤال
+  int money=0;//مقدار الربح
+  List answers=List.generate(4, (index) => '');//مصفوفة للأجوبة لكل سؤال
 
+//ألوان الأزرار الافتراضية
   Color? answer0Color=Colors.blue[700];
   Color? answer1Color=Colors.blue[700];
   Color? answer2Color=Colors.blue[700];
   Color? answer3Color=Colors.blue[700];
   Color? changeQuestionColor=Colors.blue[700];
   Color? delete2AnswersColor=Colors.blue[700];
-  bool rightAnswer=false;
-  List disabledAnswersIndex = List.generate(2, (index) => -1);
 
+  List disabledAnswersIndex = List.generate(2, (index) => -1);//أزرار الأجوبة المعطلة عند حذف إجابتين
+
+//استدعاء جميع الأسئلة من قاعدة البيانات ووضعها في مصفوفات
   Future readData1() async{
     List<Map> response1 = await sqlDb.read("easyQuestions");
     questions1.addAll(response1);
-    if(mounted){
+    if(mounted){//تكون true فقط بعد استعداء الحالة الابتدائية مباشرة
       setState(() {
         
       });
@@ -60,17 +61,18 @@ class GamePage  extends StatefulWidget {
 
       });
     }
-    setQuestions();
-    setAnswers();
+    setQuestions();//وضع أسئلة المسابقة
+    setAnswers();//وضع أجوبة السؤال الأول
     return response3;
   }
 
 
 Random random = Random();
-  Set<int> generatedNumbers1 = <int>{};
-  Set<int> generatedNumbers2 = <int>{};
-  Set<int> generatedNumbers3 = <int>{};
+  Set<int> generatedNumbers1 = <int>{};//مجموعة الأرقام العشوائية الخاصة بالأسئلة السهلة
+  Set<int> generatedNumbers2 = <int>{};//مجموعة الأرقام العشوائية الخاصة بالأسئلة المتوسطة
+  Set<int> generatedNumbers3 = <int>{};//مجموعة الأرقام العشوائية الخاصة بالأسئلة الصعبة
 
+//وضع اسئلة المسابقة
 void setQuestions() {
   for (int i = 0; i < 5; i++) {
     int randomNumber1;
@@ -97,7 +99,7 @@ void setQuestions() {
     gameQuestions[i + 10] = questions3[randomNumber3];//الأسئلة الصعبة
   }
   
-  int randomNumberAlternative;
+  int randomNumberAlternative;// رقم عشوائي من أجل السؤال البديل
   do {
     randomNumberAlternative = random.nextInt(questions3.length);
   } while (generatedNumbers3.contains(randomNumberAlternative)); // التأكد من عدم تكرار السؤال البديل
@@ -110,6 +112,8 @@ setAnswers(){
   answers[2]= "${gameQuestions[questionNum]['answer2F']}";
   answers[3]= "${gameQuestions[questionNum]['answer3F']}";
   answers.shuffle();
+  //إعادة تفعيل أزرار الإجابة
+  disabledAnswersIndex[0]=-1;disabledAnswersIndex[1]=-1;
 }
 
 int getMoney(){
@@ -155,14 +159,13 @@ void showRightAnswer(){setState((){
     "f_name":"$firstName" ,
     "l_name":"$lastName",
     "gain":"${getMoney()}",});
-   if(response > 0 && flag){
+   if(response > 0 ){
     gain=getMoney();
-    flag=false;
     Navigator.of(context).pushReplacementNamed("lose");
   }}
-  bool wrongTapped =false;
-  bool buttonTapped =false;
-  void handleButtonTap(){
+  bool wrongTapped =false; //الضغط على زر إجابة خاطىء
+  bool buttonTapped =false;//الضغط على زر إجابة
+  void handleButtonTap(){ //منع الضغط على الزر لمدة ثانية
     setState(() {
       Timer(const Duration(seconds: 1), () {
         setState(() {
@@ -171,6 +174,8 @@ void showRightAnswer(){setState((){
        });
     });
   }
+
+//الحالة الابتدائية
 @override
 void initState() {
   super.initState(); 
@@ -181,10 +186,10 @@ void initState() {
 }
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return WillPopScope( //لمنع الانتقال إلى الشاشة السابقة عند الضغط على زر الرجوع
       onWillPop: () async {
         // إظهار رسالة تأكيد عند الضغط على زر الرجوع
-        bool shouldPop = await showDialog(
+        showDialog(
           context: context,
           builder: (context) =>  AlertDialog( //رسالة التنبيه
             title: const Text("هل تريد الخروج؟",textAlign: TextAlign.center,),
@@ -210,19 +215,19 @@ void initState() {
                child: const Text("نعم",style: TextStyle(fontSize: 20,color: Colors.white),)),],
            )
         );
-        if (shouldPop) {
-          Navigator.of(context).pushReplacementNamed("home");
-        }
-        return false;
+        return false;// يمنع العودة إلى الوراء
       },
       child: Scaffold(
         body:Container(
           color: Colors.blue[900],
           padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 20),
           child: Column(children: [
+            // بداية سطر ===========================================================================================================================  
+          
             Expanded(child: Row(children: [
               Column( 
                 children: [
+                  //--------------------------------------------------------------------------------------------------------------------------
                   //زر الخروج من المسابقة
                   Container(
                     margin: const EdgeInsets.only(right: 10,top: 10),
@@ -267,6 +272,9 @@ void initState() {
                      Container(margin: const EdgeInsets.only(right: 10), child: const Text("الخروج",  style: TextStyle(color: Colors.white),))
                 ],
               ),
+              //--------------------------------------------------------------------------------------------------------------------------------
+
+              //زر إعادة اللعب
               Column(
                 children: [
                   Container(
@@ -311,7 +319,11 @@ void initState() {
                       Container( margin: const EdgeInsets.only(right: 10), child: const Text("إعادة اللعب",  style: TextStyle(color: Colors.white),))
                 ],
               ),
-              const Spacer(),
+              //---------------------------------------------------------------------------------------------------------------------------
+              const Spacer(),//فراغ
+              //---------------------------------------------------------------------------------------------------------------------------
+
+              //تحديد المستوى الحالي
               Column(
                 children: [
                   Container(padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 5),
@@ -320,8 +332,12 @@ void initState() {
                    Text("${questionNum+1}/15",style: const TextStyle(color: Colors.white,fontSize: 20),)
                 ],
               )
+              //-------------------------------------------------------------------------------------------------------------------------------
+
             ],)),
+           //انتهى السطر======================================================================================================================================
            
+           //حاوية نص السؤال
             Expanded(flex: 3,
             child: Container( 
               margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 20),
@@ -339,8 +355,12 @@ void initState() {
               textAlign: TextAlign.center,
               textDirection: TextDirection.rtl,),
             )),
+            //--------------------------------------------------------------------------------------------------------------------------------
 
+           //بداية سطر ====================================================================================================================================
             Expanded(child: Row(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children: [
+
+               //زر حذف إجابتين
               Column(
                 children: [
                   Container(
@@ -352,9 +372,10 @@ void initState() {
                     child: IconButton(
                       onPressed: (){
                         setState(() {
-                          int i=0;
+                          int i=0;//عداد للتأكد من حذف إجابتين فقط
                         if(delete2Answers){
-                          int lastIndex=-1;int a=0;
+                          int lastIndex=-1;//للإشارة إلى أخر جواب محذوف
+                          int a=0;//عداد لمصفوفة الاجوبة المعطلة
                           while(i<2){
                             int randomIndex=random.nextInt(3);
                             if(answers[randomIndex]!=gameQuestions[questionNum]['answerT']&& randomIndex!=lastIndex){
@@ -362,8 +383,9 @@ void initState() {
                               i++;
                               lastIndex=randomIndex;
                               disabledAnswersIndex[a]=randomIndex;a++;}}
-                          delete2AnswersColor=Colors.grey[700];
-                          delete2Answers=false;}
+                          delete2AnswersColor=Colors.grey[700];// تلوين زر حذف إجابتين بالرمادي
+                          delete2Answers=false;// عدم إمكانية حذف إجابتين مرة أخرى
+                          }
                           });
                          
                       },
@@ -371,6 +393,9 @@ void initState() {
                   const Text("حذف إجابتين",style: TextStyle(color: Colors.white),)
                 ],
               ),
+              //-----------------------------------------------------------------------------------------------------------------------------
+
+              //حاوية كمية الريح
               Container( 
               margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 10),
               decoration: BoxDecoration(
@@ -385,6 +410,9 @@ void initState() {
               textDirection: TextDirection.rtl,)
               ,
             ),
+            //--------------------------------------------------------------------------------------------------------------------------------
+
+            //زر تغيير السؤال
               Column(
                 children: [
                   Container(
@@ -410,12 +438,13 @@ void initState() {
                           }
                         );
                          }
-                        else if(questionNum>=10 && !changeQuestion){
+                        else if(questionNum>=10 && changeQuestion){
                           setState(() {
-                          gameQuestions[questionNum]=gameQuestions[15];
-                          setAnswers();
-                          changeQuestion=true;
-                          changeQuestionColor=Colors.grey[700];});}
+                          gameQuestions[questionNum]=gameQuestions[15];//تبديل السؤال الحالي بالسؤال البديل
+                          setAnswers();//وضع إجابات السؤال البديل
+                          changeQuestion=false;//عدم إمكانية تغيير السؤال مرة أخرى
+                          changeQuestionColor=Colors.grey[700];// تلوين زر تغيير السؤال بالرمادي
+                          });}
                         else{null;}
                       });
                      
@@ -424,33 +453,38 @@ void initState() {
                    const Text("تغيير السؤال",style: TextStyle(color: Colors.white),)
                 ],
               ),
+              //-------------------------------------------------------------------------------------------------------------------------------
             ],)),
+            //انتهى السطر=========================================================================================================================
+
             Expanded(flex:4,child:Column(
               mainAxisAlignment:MainAxisAlignment.spaceEvenly, children: [
+
+                 //زر الإجابة الأولى
                 MaterialButton(
-                onPressed: (buttonTapped || wrongTapped)?handleButtonTap:(){
-                  if(disabledAnswersIndex[0]!=0 && disabledAnswersIndex[1]!=0){
+                onPressed: (buttonTapped || wrongTapped)?handleButtonTap:(){// التحقق من أن الزر تم ضغطه أم لا 
+                  if(disabledAnswersIndex[0]!=0 && disabledAnswersIndex[1]!=0){//التأكد من أن زر الإجابة غير معطل
                   setState(() {
-                  if(answers[0]==gameQuestions[questionNum]['answerT']){
+                  if(answers[0]==gameQuestions[questionNum]['answerT']){//الإجابة صحيحة
                     showRightAnswer();
                     buttonTapped=true;
                     Future.delayed(const Duration(seconds: 1),(){
                     setState(() { 
-                    if(questionNum<14){
+                    if(questionNum<14){//السؤال ليس الأخبر
                     answer0Color=Colors.blue[700];
-                    questionNum++;
-                    setAnswers();
+                    questionNum++;//الانتقال الى السؤال التالي
+                    setAnswers();//عرض أجوبة السؤال التالي
                     buttonTapped=false;}
-                    else{winning();}});
+                    else{winning();}});//عند السؤال الأخير
                     });}
-                  else{
+                  else{//الإجابة خاطئة
                      answer0Color=Colors.red[700];
                      wrongTapped=true;
                      Future.delayed(const Duration(seconds: 1),(){showRightAnswer();});
                      Future.delayed(const Duration(seconds: 2),(){losing();});
                   } });
                   }
-                  disabledAnswersIndex[0]=-1;disabledAnswersIndex[1]=-1;},
+                  },
                 color:answer0Color,
                 textColor: Colors.white,
                 height: 70,minWidth:380,
@@ -463,6 +497,9 @@ void initState() {
                 textDirection: TextDirection.rtl,
                 ),
                  ),
+
+                //-------------------------------------------------------------------------------------------------------------------------
+                //زر الإجابة الثانية
                  MaterialButton(
                   onPressed: (buttonTapped || wrongTapped)?handleButtonTap: (){
                   if(disabledAnswersIndex[0]!=1 && disabledAnswersIndex[1]!=1){
@@ -486,7 +523,7 @@ void initState() {
                      Future.delayed(const Duration(seconds: 2),(){losing();});
                   } });
                   }
-                  disabledAnswersIndex[0]=-1;disabledAnswersIndex[1]=-1;},
+                  },
                 color: answer1Color,
                 textColor: Colors.white,
                 height: 70,minWidth:380,
@@ -498,6 +535,9 @@ void initState() {
                  textAlign: TextAlign.center,
                 textDirection: TextDirection.rtl,),
                  ),
+
+                 //-------------------------------------------------------------------------------------------------------------------------
+                 //زر الإجابة الثالثة
                  MaterialButton(
                   onPressed: (buttonTapped || wrongTapped)?handleButtonTap: (){
                   if(disabledAnswersIndex[0]!=2 && disabledAnswersIndex[1]!=2){
@@ -521,7 +561,7 @@ void initState() {
                      Future.delayed(const Duration(seconds: 2),(){losing();});
                   } });
                   }
-                  disabledAnswersIndex[0]=-1;disabledAnswersIndex[1]=-1;},
+                   },
                 color: answer2Color,
                 textColor: Colors.white,
                 height: 70,minWidth:380,
@@ -533,6 +573,9 @@ void initState() {
                  textAlign: TextAlign.center,
                 textDirection: TextDirection.rtl,),
                  ),
+
+                 //-------------------------------------------------------------------------------------------------------------------------
+                 //زر الإجابة الرابعة
                  MaterialButton( 
                   onPressed: (buttonTapped || wrongTapped)?handleButtonTap: (){
                   if(disabledAnswersIndex[0]!=3 && disabledAnswersIndex[1]!=3){
@@ -556,7 +599,7 @@ void initState() {
                      Future.delayed(const Duration(seconds: 2),(){losing();});
                   } });
                   }
-                  disabledAnswersIndex[0]=-1;disabledAnswersIndex[1]=-1;},
+                  },
                 color:  answer3Color,
                 textColor: Colors.white,
                 height: 70,minWidth:380,

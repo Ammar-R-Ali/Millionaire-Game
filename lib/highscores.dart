@@ -14,7 +14,7 @@ class HighScores extends StatefulWidget {
   bool isLoading=true;
   List players =[];
   void sortList(){
-    players.sort((b,a)=>a['gain'].compareTo(b['gain']));
+    players.sort((b,a)=>a['gain'].compareTo(b['gain']));// ترتيب تنازلي
   }
 
   Future readData() async{
