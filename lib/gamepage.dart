@@ -18,7 +18,7 @@ class GamePage  extends StatefulWidget {
   List questions1 =[]; //مصفوفة لجميع الأسئلة السهلة ضمن قاعدة البيانات
   List questions2 =[];//مصفوفة لجميع الأسئلة المتوسطة ضمن قاعدة البيانات
   List questions3 =[];//مصفوفة لجميع الأسئلة الصعبة ضمن قاعدة البيانات
-  int questionNum =14;//رقم السؤال
+  int questionNum =0;//رقم السؤال
   int money=0;//مقدار الربح
   List answers=List.generate(4, (index) => '');//مصفوفة للأجوبة لكل سؤال
 
